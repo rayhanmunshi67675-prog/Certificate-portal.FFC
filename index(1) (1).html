@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Certificate Portal</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700;800;900&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Montserrat', sans-serif;
+        }
+
+        body {
+            background-color: #030611;
+            color: #ffffff;
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Background Canvas */
+        #bgCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        /* ==================== COOL PRELOADER ==================== */
+        #preloader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #03050d;
+            background-image: 
+                linear-gradient(rgba(0, 210, 255, 0.04) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 210, 255, 0.04) 1px, transparent 1px);
+            background-size: 30px 30px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 0.8s ease, visibility 0.8s ease;
+        }
+
+        .loader-glow-bg {
+            position: absolute;
+            width: 280px;
+            height: 280px;
+            background: radial-gradient(circle, rgba(0, 162, 255, 0.25) 0%, rgba(121, 40, 202, 0.15) 50%, transparent 70%);
+            border-radius: 50%;
+            filter: blur(20px);
+            animation: pulseGlow 2.5s infinite ease-in-out;
+        }
+
+        .loader-container {
+            position: relative;
+            width: 200px;
+            height: 200px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .orbit-ring-1 {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            border: 2px solid transparent;
+            border-top-color: #00f2fe;
+            border-right-color: #0099ff;
+            animation: rotateClockwise 1.8s linear infinite;
+            filter: drop-shadow(0 0 10px #00f2fe);
+        }
+
+        .orbit-ring-2 {
+            position: absolute;
+            width: 82%;
+            height: 82%;
+            border-radius: 50%;
+            border: 2px solid transparent;
+            border-bottom-color: #7928ca;
+            border-left-color: #ff0080;
+            animation: rotateCounter 1.2s linear infinite;
+            filter: drop-shadow(0 0 10px #7928ca);
+        }
+
+        .orbit-ring-3 {
+            position: absolute;
+            width: 66%;
+            height: 66%;
+            border-radius: 50%;
+            border: 1px dashed rgba(0, 242, 254, 0.5);
+            animation: rotateClockwise 4s linear infinite;
+        }
+
+        .loader-logo {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            z-index: 2;
+            box-shadow: 0 0 25px rgba(0, 210, 255, 0.6);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            background: #080d1a;
+        }
+
+        .progress-box {
+            margin-top: 40px;
+            width: 260px;
+            text-align: center;
+            z-index: 2;
+        }
+
+        .progress-bar-bg {
+            width: 100%;
+            height: 5px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #00d2ff 0%, #7928ca 100%);
+            box-shadow: 0 0 12px #00d2ff;
+            border-radius: 10px;
+            transition: width 0.1s linear;
+        }
+
+        .loader-text {
+            margin-top: 15px;
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 3px;
+            color: #8a99ad;
+            text-transform: uppercase;
+        }
+
+        @keyframes rotateClockwise {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes rotateCounter {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(-360deg); }
+        }
+
+        @keyframes pulseGlow {
+            0%, 100% { transform: scale(0.9); opacity: 0.6; }
+            50% { transform: scale(1.1); opacity: 1; }
+        }
+
+        /* ==================== MAIN CONTENT ==================== */
+        .top-bar {
+            position: relative;
+            z-index: 10;
+            padding: 20px 30px;
+            display: flex;
+            align-items: center;
+        }
+
+        .brand-logo {
+            width: 55px;
+            height: 55px;
+            border-radius: 50%;
+            border: 2px solid #00d2ff;
+            box-shadow: 0 0 15px rgba(0, 210, 255, 0.5);
+            object-fit: cover;
+        }
+
+        .main-wrapper {
+            position: relative;
+            z-index: 10;
+            max-width: 900px;
+            margin: 20px auto 50px auto;
+            padding: 0 20px;
+        }
+
+        .page-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .page-header h1 {
+            font-size: 32px;
+            font-weight: 800;
+            color: #ffffff;
+            margin-bottom: 8px;
+        }
+
+        .glass-card {
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #cbd5e1;
+        }
+
+        .glass-input, .glass-select {
+            width: 100%;
+            padding: 14px 18px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            border-radius: 12px;
+            color: #ffffff;
+            font-size: 16px;
+            outline: none;
+            transition: 0.3s;
+        }
+
+        .glass-input:focus, .glass-select:focus {
+            border-color: #00d2ff;
+            box-shadow: 0 0 12px rgba(0, 210, 255, 0.3);
+        }
+
+        .glass-select option {
+            background: #0f172a;
+            color: #ffffff;
+        }
+
+        .btn-glow {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #00d2ff 0%, #0072ff 100%);
+            color: #ffffff;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.3s;
+            box-shadow: 0 0 15px rgba(0, 210, 255, 0.4);
+            text-transform: uppercase;
+        }
+
+        .btn-glow:hover {
+            box-shadow: 0 0 25px rgba(0, 210, 255, 0.7);
+        }
+
+        .canvas-container {
+            margin-top: 25px;
+            text-align: center;
+        }
+
+        canvas#certCanvas {
+            max-width: 100%;
+            height: auto;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            display: none;
+        }
+
+        .btn-download {
+            background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+            box-shadow: 0 0 15px rgba(34, 197, 94, 0.4);
+            margin-top: 20px;
+            display: none;
+        }
+
+        .btn-download:hover {
+            box-shadow: 0 0 25px rgba(34, 197, 94, 0.7);
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="bgCanvas"></canvas>
+
+    <!-- COOL PRELOADER -->
+    <div id="preloader">
+        <div class="loader-glow-bg"></div>
+        <div class="loader-container">
+            <div class="orbit-ring-1"></div>
+            <div class="orbit-ring-2"></div>
+            <div class="orbit-ring-3"></div>
+            <img src="logo.jpg" alt="Logo" class="loader-logo">
+        </div>
+
+        <div class="progress-box">
+            <div class="progress-bar-bg">
+                <div class="progress-bar-fill" id="progressFill"></div>
+            </div>
+            <div class="loader-text" id="loaderText">LOADING... 0%</div>
+        </div>
+    </div>
+
+    <!-- Top Corner Branding -->
+    <div class="top-bar">
+        <img src="logo.jpg" alt="Logo" class="brand-logo">
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="main-wrapper">
+        <div class="page-header">
+            <h1>Get Your Certificate</h1>
+            <p style="color: #94a3b8;">আপনার নাম লিখে সার্টিফিকেট সংগ্রহ করুন</p>
+        </div>
+
+        <div class="glass-card">
+            <div class="form-group">
+                <label for="fullName">আপনার নাম লিখুন:</label>
+                <input type="text" id="fullName" class="glass-input" placeholder="এখানে নাম টাইপ করুন...">
+            </div>
+
+            <div class="form-group">
+                <label for="certType">সার্টিফিকেট ক্যাটাগরি সিলেক্ট করুন:</label>
+                <select id="certType" class="glass-select">
+                    <option value="participant">Participant Certificate</option>
+                    <option value="ca">Campus Ambassador Certificate</option>
+                </select>
+            </div>
+
+            <button class="btn-glow" onclick="generateCertificate()">Get Certificate</button>
+
+            <div class="canvas-container">
+                <canvas id="certCanvas"></canvas>
+                <button id="downloadBtn" class="btn-glow btn-download" onclick="downloadCertificate()">Download Certificate</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const GOOGLE_SHEET_SCRIPT_URL = "YOUR_GOOGLE_APPS_SCRIPT_URL_HERE";
+
+        // Preloader Progress
+        let percent = 0;
+        const progressFill = document.getElementById('progressFill');
+        const loaderText = document.getElementById('loaderText');
+        const preloader = document.getElementById('preloader');
+
+        const loadInterval = setInterval(() => {
+            percent += Math.floor(Math.random() * 8) + 3;
+            if (percent >= 100) {
+                percent = 100;
+                clearInterval(loadInterval);
+                setTimeout(() => {
+                    preloader.style.opacity = '0';
+                    preloader.style.visibility = 'hidden';
+                }, 400);
+            }
+            progressFill.style.width = percent + '%';
+            loaderText.innerText = `LOADING... ${percent}%`;
+        }, 60);
+
+        // Particle Canvas Background
+        const bgCanvas = document.getElementById('bgCanvas');
+        const bgCtx = bgCanvas.getContext('2d');
+        let particles = [];
+
+        function resizeBg() {
+            bgCanvas.width = window.innerWidth;
+            bgCanvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeBg);
+        resizeBg();
+
+        class Particle {
+            constructor() { this.reset(); }
+            reset() {
+                this.x = Math.random() * bgCanvas.width;
+                this.y = Math.random() * bgCanvas.height;
+                this.size = Math.random() * 2 + 0.5;
+                this.speedY = -(Math.random() * 0.6 + 0.2);
+                this.opacity = Math.random() * 0.7 + 0.2;
+            }
+            update() {
+                this.y += this.speedY;
+                if (this.y < 0) {
+                    this.reset();
+                    this.y = bgCanvas.height;
+                }
+            }
+            draw() {
+                bgCtx.fillStyle = `rgba(0, 210, 255, ${this.opacity})`;
+                bgCtx.beginPath();
+                bgCtx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                bgCtx.fill();
+            }
+        }
+
+        for (let i = 0; i < 65; i++) { particles.push(new Particle()); }
+        function animate() {
+            bgCtx.clearRect(0, 0, bgCanvas.width, bgCanvas.height);
+            particles.forEach(p => { p.update(); p.draw(); });
+            requestAnimationFrame(animate);
+        }
+        animate();
+
+        // Unique ID Generator (For Google Sheet Data only)
+        function generateUID() {
+            const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+            let randomStr = '';
+            for (let i = 0; i < 6; i++) {
+                randomStr += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return 'FFC-' + randomStr;
+        }
+
+        let currentUID = '';
+
+        // Generate Certificate
+        function generateCertificate() {
+            const name = document.getElementById('fullName').value.trim();
+            const certType = document.getElementById('certType').value;
+            const canvas = document.getElementById('certCanvas');
+            const ctx = canvas.getContext('2d');
+            const downloadBtn = document.getElementById('downloadBtn');
+
+            if (!name) {
+                alert('দয়া করে আগে আপনার নাম লিখুন!');
+                return;
+            }
+
+            currentUID = generateUID();
+            const imageSrc = certType === 'ca' ? 'certificate2.jpg' : 'certificate1.jpg';
+
+            const img = new Image();
+            img.src = imageSrc;
+
+            img.onload = function () {
+                canvas.width = img.width;
+                canvas.height = img.height;
+
+                // Draw template image
+                ctx.drawImage(img, 0, 0);
+
+                // Draw ONLY the Name on Certificate
+                ctx.font = 'bold 55px "Montserrat", sans-serif';
+                ctx.fillStyle = '#000000';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(name, canvas.width / 2, canvas.height / 2);
+
+                canvas.style.display = 'block';
+                downloadBtn.style.display = 'block';
+
+                // Send Record to Google Sheet
+                sendDataToSheet(name, certType === 'ca' ? 'Campus Ambassador' : 'Participant', currentUID);
+            };
+
+            img.onerror = function() {
+                alert(`ফাইলটি পাওয়া যায়নি! দয়া করে "${imageSrc}" এবং "logo.jpg" একই ফোল্ডারে রাখুন।`);
+            }
+        }
+
+        function sendDataToSheet(name, type, uid) {
+            if (GOOGLE_SHEET_SCRIPT_URL === "YOUR_GOOGLE_APPS_SCRIPT_URL_HERE") return;
+
+            fetch(GOOGLE_SHEET_SCRIPT_URL, {
+                method: "POST",
+                mode: "no-cors",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ name: name, type: type, uid: uid })
+            }).catch(err => console.error("Data Save Error:", err));
+        }
+
+        function downloadCertificate() {
+            const name = document.getElementById('fullName').value.trim() || 'Certificate';
+            const canvas = document.getElementById('certCanvas');
+            const link = document.createElement('a');
+            link.download = `${name}_Certificate.png`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        }
+    </script>
+</body>
+</html>
